@@ -122,6 +122,24 @@ export class StudentsRoutes extends CommonRoutesConfig {
       }
     });
 
+    this.app.route('/api/students').patch(async (req: express.Request, res: express.Response) => {
+      try {
+        const { authorization } = req.headers;
+        const token: ITokenData = verifyToken(authorization);
+        const student: IStudent = req.body;
+
+        if (token.role !== Role.SUPER_ADMIN) {
+          throw errorHandler(res, ErrorCode.ACCESS_DENIED, 'access denied');
+        }
+
+        const result = await this._service.updateStudentPassword(student, token.cid);
+        await publish(`${token.cid}-students-${result.groupId}`, result);
+        res.status(200).send(result);
+      } catch (err) {
+        errorHandler(res, ErrorCode.ERROR, err.message);
+      }
+    });
+
     return this.app;
   }
 }

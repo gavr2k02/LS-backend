@@ -104,6 +104,24 @@ export class TeachersRoutes extends CommonRoutesConfig {
       }
     });
 
+    this.app.route('/api/teachers/password').patch(async (req: express.Request, res: express.Response) => {
+      try {
+        const { authorization } = req.headers;
+        const token: ITokenData = verifyToken(authorization);
+        const teacher: ITeacher = req.body;
+
+        if (token.role !== Role.SUPER_ADMIN) {
+          throw errorHandler(res, ErrorCode.ACCESS_DENIED, 'access denied');
+        }
+
+        const result = await this._service.updateTeacherPassword(teacher, token.cid);
+        await publish(`${token.cid}-teachers`, result);
+        res.status(200).send(result);
+      } catch (err) {
+        errorHandler(res, ErrorCode.ERROR, err.message);
+      }
+    });
+
     return this.app;
   }
 }

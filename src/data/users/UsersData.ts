@@ -1,7 +1,7 @@
 import { IFaculty } from 'models/interfaces/IFaculty';
 import { IUser } from 'models/interfaces/IUser';
 import { Collection, ObjectId } from 'mongodb';
-import { IBFaculity } from '../../models/interfaces/IBFaculity';
+import { formatData } from '../../common/utils/mongo';
 import { IUsersData } from './IUsersData';
 
 export class UsersData implements IUsersData {
@@ -10,12 +10,20 @@ export class UsersData implements IUsersData {
   constructor(collection: Collection<IUser>) {
     this._collection = collection;
   }
+
   public async createUser(user: IUser): Promise<IUser> {
-    throw new Error('Method not implemented.');
+    await this._collection.insertOne(user);
+    return formatData(user);
   }
 
-  public async updateUser(user: IUser): Promise<IUser> {
-    throw new Error('Method not implemented.');
+  public async updateUser(value: IUser): Promise<IUser> {
+    const result = await this._collection.findOneAndUpdate(
+      { _id: new ObjectId(value.id), deleted: { $exists: false } },
+      { $set: value },
+      { returnDocument: 'after' },
+    );
+
+    return formatData(result.value);
   }
 
   public async getUserById(userId: string): Promise<IUser> {
@@ -34,6 +42,7 @@ export class UsersData implements IUsersData {
     const formatUser = user;
     formatUser.id = user['_id'].toHexString();
     delete formatUser['_id'];
+    delete formatUser['cid'];
     delete formatUser['fields.password'];
     return formatUser;
   }

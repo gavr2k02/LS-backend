@@ -1,10 +1,11 @@
+import { ILoginPassword } from 'models/interfaces/ILoginPassword';
 import { ITeacher } from 'models/interfaces/ITeacher';
 import { checkPayload } from '../../common/joi';
 import { stringJoi } from '../../common/joi/base/string.scheme';
 import { teacherScheme } from '../../common/joi/card/teacher.scheme';
 import { ITeachersData } from '../../data/teachers/ITeachersData';
 import { ITeachersService } from './ITeachersService';
-
+import bcrypt from 'bcryptjs';
 export class TeachersService implements ITeachersService {
   private readonly _data: ITeachersData;
 
@@ -31,6 +32,18 @@ export class TeachersService implements ITeachersService {
       throw new Error('This name exists');
     }
 
+    return this._data.updateTeacher({ ...value, clientId });
+  }
+
+  public async updateTeacherPassword(value: ITeacher, clientId: string): Promise<ITeacher> {
+    await checkPayload(value, teacherScheme);
+    const result = await this._data.getTeacherByName({ ...value, clientId });
+
+    if (result && result?.id !== value.id) {
+      throw new Error('This name exists');
+    }
+
+    (value.fields as ILoginPassword).password = await bcrypt.hash((value.fields as ILoginPassword).password, 10);
     return this._data.updateTeacher({ ...value, clientId });
   }
 

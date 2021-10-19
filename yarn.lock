@@ -3340,7 +3340,7 @@ mkdirp@^0.5.3:
 
 "models@https://github.com/gavr2k02/learning-service-models":
   version "1.0.0"
-  resolved "https://github.com/gavr2k02/learning-service-models#29811f918fdb28e71600095c0fde4a82c19dc9e2"
+  resolved "https://github.com/gavr2k02/learning-service-models#8dab3237beca1e0e9b74e8d3899cb933297c333b"
 
 mongodb-connection-string-url@^2.0.0:
   version "2.0.0"
